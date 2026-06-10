@@ -1,0 +1,19 @@
+# === Terraform ===
+# プロバイダーバイナリ等（巨大・再生成可能）
+**/.terraform/*
+
+# ステートファイル（リソース ID や接続情報を含む）
+*.tfstate
+*.tfstate.*
+
+# 変数ファイル（DB パスワード等の機密！絶対公開しない）
+*.tfvars
+*.tfvars.json
+
+# クラッシュログ・一時ファイル
+crash.log
+crash.*.log
+override.tf
+override.tf.json
+*_override.tf
+*_override.tf.json
