@@ -44,8 +44,8 @@ jobs:
       # ⑤ init（backend に接続）
       - name: Terraform init
         working-directory: step3-3tier
-        run:  terraform init
-      
+        run: terraform init -input=false
+
       # ⑥ validate（構文チェック）
       - name: Terraform validate
         working-directory: step3-3tier
@@ -54,4 +54,6 @@ jobs:
       # ⑦ plan（差分表示・読み取りのみ）
       - name: Terraform plan
         working-directory: step3-3tier
-        run: terraform plan -no-color
+        env:
+          TF_VAR_db_password: "dummy-ci-password-not-used"
+        run: terraform plan -no-color -input=false
