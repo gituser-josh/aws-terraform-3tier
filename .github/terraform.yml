@@ -1,0 +1,57 @@
+name: Terraform CI
+
+#いつ動かすか
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+#OIDC に必要な権限(これが無いとトークンを取得できない)
+permissions:
+  id-token: write   # OIDC トークンの発行
+  contents: read    # リポジトリの読み取り
+  pull-requests:  write  # PR にコメントする（plan結果表示用）
+
+jobs:
+  terraform:
+    name: fmt / validate  / plan
+    runs-on:  ubuntu-latest
+
+    steps:
+      # ① リポジトリのコードを取得
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      # ② Terraform をインストール
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: "1.15.4"
+        
+      # ③ fmt チェック（整形されているか・認証不要）
+      - name: Terraform fmt
+        run: terraform fmt -check -recursive
+        continue-on-error: false
+      
+      # ④ AWS認証（OIDC でロールを引き受ける）
+      - name: Configure AWS credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::125291801547:role/github-actions-terraform
+          aws-region: ap-northeast-1
+      
+      # ⑤ init（backend に接続）
+      - name: Terraform init
+        working-directory: step3-3tier
+        run:  terraform init
+      
+      # ⑥ validate（構文チェック）
+      - name: Terraform validate
+        working-directory: step3-3tier
+        run: terraform validate
+
+      # ⑦ plan（差分表示・読み取りのみ）
+      - name: Terraform plan
+        working-directory: step3-3tier
+        run: terraform plan -no-color
